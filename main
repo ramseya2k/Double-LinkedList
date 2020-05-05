@@ -1,0 +1,230 @@
+import java.util.*;
+import java.io.*;
+class Main 
+{
+  public static void main(String[] args) throws FileNotFoundException
+  {
+    DLL dub = new DLL();
+    dub=insert("input.txt");
+  }
+  public static DLL insert(String fileName) throws FileNotFoundException
+  {
+    DLL list = new DLL();
+    try(Scanner file = new Scanner(new File(fileName)))
+    {
+      while(file.hasNextLine())
+      {
+        String line = file.nextLine();
+        if(line.startsWith("delete ")) // if .txt contains delete then delete then find the word from the DLL, and remove it
+        {
+          String element = line.substring("delete ".length());
+          list.remove(element);
+          continue;
+        }
+        list.add(line); // adds the names in the string 
+      }
+      list.sort(); // sorts the names out in alphabetical order 
+      list.traverse(); // displays the names 
+      list.writeToFile("output.txt"); // puts the names in an output file
+    }
+    return list;
+  }
+}
+/*===================================================================*/
+class DLL
+{
+  private Node head;
+  private Node tail;
+  /******************************************************************/
+  public void traverse() // this method displays the DLL traversing forward and backward
+  {
+    System.out.println();
+    for(Node n=head; n!=null; n=n.getNext()) // traverses forwards
+    {
+      System.out.println(n.getValue());
+    }
+    System.out.println("==========");
+    for(Node n=tail; n!=null; n=n.getPrev()) // traverses backwards
+    {
+      System.out.println(n.getValue());
+    }
+  }
+  /******************************************************************/
+  public void add(String line) // this method adds a name into the doubly linked list 
+  {
+    Node newNode = new Node(line); // creates a new node 
+    if(head==null) //if the head is null set the head and tail equal to the new node 
+    {
+      head=newNode;
+      tail=newNode;
+    }
+    else // otherwise, add the tail at the end 
+    {
+      newNode.setPrev(tail);
+      tail.setNext(newNode);
+      tail=newNode;
+    }
+  }
+  /******************************************************************/
+  public void remove(String line) // removes a node 
+  {
+    Node nodeToDelete = find(line); // checks to see if node is available
+    removeNode(nodeToDelete); // remove the node 
+  }
+  /******************************************************************/
+  private Node find(String element) // this method checks to see if the name is available 
+  {
+    Node curr = head;
+    if(curr==null) // if the node is empty, then make the program crash
+    {
+      throw new IllegalStateException("LinkedList is empty.");
+    }
+    while(curr!=null) // otherwise, traverse through the program
+    {
+      if(curr.getValue().equals(element))
+      {
+        return curr;
+      }
+      curr=curr.getNext();
+    }
+    if(curr==null) // if element cant be found then throw an exception
+    {
+      throw new IllegalStateException("Element was not found.");
+    }
+    return null; // returns nothing 
+  }
+  /******************************************************************/
+  public Node findSmallest() // this method finds the smallest node 
+  {
+    Node curr = head; 
+    if(curr==null) // if curr is empty, then there is nothing to find 
+    {
+      throw new IllegalStateException("LinkedList is empty.");
+    }
+   String smallestElement = curr.getValue();
+   Node smallestNode=curr;
+   while(curr!=null) // 
+   {
+      if(smallestElement.compareTo(curr.getValue())>0)
+      {
+        smallestNode=curr;
+        smallestElement = smallestNode.getValue();      
+      }
+      curr=curr.getNext();    
+   }
+    return smallestNode;
+  }
+  /******************************************************************/
+  public void removeNode(Node nodeToDelete) // removes the node 
+  {
+    Node prev = nodeToDelete.getPrev();
+    Node next = nodeToDelete.getNext();
+
+    if(prev == null && next == null) // case to remove an item with no previous or next 
+    {
+      head=null;
+      tail=null;
+    }
+    else if(prev==null) // case to remove a name that happens to be at the head 
+    {
+      head=next;
+      head.setPrev(null);
+    }
+    else if(next==null) // case to remove a name that happens to be at the tail
+    {
+      tail=prev;
+      tail.setNext(null);
+    }
+    else // otherwise remove the node in-between
+    {
+      prev.setNext(next);
+      next.setPrev(prev);
+    }
+  }
+  /******************************************************************/
+  public boolean isEmpty() // checks if the DLL is empty 
+  {
+    return head==null;
+  }
+  /******************************************************************/
+  public void sort() // sorts out the DLL in alphabetical order 
+  {
+    DLL sorted = new DLL();
+    if(isEmpty()) // if it is empty then return and exit 
+    {
+      return;
+    }    
+    while (!isEmpty()) 
+    {
+      Node smallest = findSmallest(); // finds the smallest node in head and assigns it to te node 
+      sorted.add(smallest.getValue()); // adds the string of the node in the DLL 
+      remove(smallest.getValue()); // removes the smallest node 
+    }
+    head = sorted.head; // make the node set to the address of the sorted head 
+    tail = sorted.tail; // make the tail sorted to the address of the sorted tail 
+  }
+  /******************************************************************/
+  public void writeToFile(String fileName)
+  {
+    try
+    {
+      PrintWriter outputWrite = new PrintWriter(fileName); // creates a new output file 
+      for(Node n=head; n!=null; n=n.getNext()) // traverses forwards
+      {
+        outputWrite.println(n.getValue()); // prints the names while traversing forwards 
+      }
+      outputWrite.println("==========");
+      for(Node n=tail; n!=null; n=n.getPrev()) // traverses backwards
+      {
+        outputWrite.println(n.getValue()); // prints the names while traversing backwards 
+      }
+      outputWrite.close(); // flushes the data 
+    }
+    catch(FileNotFoundException e)
+    {
+      e.printStackTrace();
+    }
+  }
+}
+/*===================================================================*/
+class Node
+{
+  private Node prev;
+  private Node next;
+  private String name;
+  /******************************************************************/
+  Node(String name) // constructor
+  {
+    this.name=name;
+  }
+  /******************************************************************/
+  public String getValue() // this function returns the name 
+  {
+    return this.name;
+  }
+  /******************************************************************/
+  public void setValue(String name) // this function changes the value
+  {
+    this.name=name;
+  }
+  /******************************************************************/
+  public Node getNext() // this function returns the previous node 
+  {
+    return this.next;
+  }
+  /******************************************************************/
+  public Node getPrev() // this function returns the previous node 
+  {
+    return this.prev;
+  }
+  /******************************************************************/
+  public void setNext(Node next) // this function sets the next node
+  {
+    this.next=next;
+  }
+  /******************************************************************/
+  public void setPrev(Node prev) // this function sets the previous node
+  {
+    this.prev=prev;
+  }
+}
